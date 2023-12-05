@@ -7,13 +7,23 @@ FROM mcr.microsoft.com/vscode/devcontainers/php:0-${VARIANT}
 ARG NODE_VERSION="none"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
-# [Optional] Uncomment this section to install additional OS packages.
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-       mysql-client
+# Use a base image with the desired version of MySQL client
+FROM mysql:8.0
 
-# Start MySQL service
-#CMD ["service", "mysql", "start"]
+# Set environment variables for configuration
+ENV MYSQL_HOST=localhost \
+    MYSQL_PORT=3306 \
+    MYSQL_USER=root \
+    MYSQL_PASSWORD=secret
+
+# Add labels for better maintainability
+LABEL maintainer="Your Name <your.email@example.com>"
+
+# Update package lists and install MySQL client
+RUN apt-get update && apt-get install -y mysql-client
+
+# Set the default command to run when the container starts
+CMD ["mysql"]
 
 
 # [Optional] Uncomment this line to install global node packages.
